@@ -2,30 +2,56 @@
   <div>
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-semibold">Produkter</h1>
-      <button
-        class="rounded-md border px-3 py-2 hover:bg-gray-100"
-        @click="fetchProducts"
+
+      <router-link
+        to="/products/new"
+        class="rounded-md bg-black text-white px-4 py-2"
       >
-        Uppdatera
-      </button>
+        Ny produkt
+      </router-link>
     </div>
 
     <p v-if="loading">Laddar...</p>
     <p v-else-if="error" class="text-red-600 text-sm">{{ error }}</p>
 
     <div v-else class="space-y-2">
-      <div
-        v-for="p in products"
-        :key="p.id"
-        class="rounded-lg border bg-white p-3 flex items-center justify-between"
-      >
-        <div>
-          <div class="font-medium">{{ p.name }}</div>
-          <div class="text-sm text-gray-600">
-            Pris: {{ p.price }} • Lager: {{ p.stockQuantity }}
-          </div>
+<div
+  v-for="p in products"
+  :key="p.id"
+  class="rounded-lg border bg-white p-3 flex items-center justify-between gap-4"
+>
+  <div class="flex items-center gap-4 min-w-0">
+    <img
+      :src="p.imageUrl"
+      alt=""
+      class="h-14 w-14 rounded object-cover border"
+      @error="(e) => (e.target.src = '/placeholder.png')"
+    />
+
+    <div class="min-w-0">
+      <div class="font-medium truncate">{{ p.name }}</div>
+      <div class="text-sm text-gray-600">
+        Pris: {{ p.price }} • Lager: {{ p.stockQuantity }}
+      </div>
+    </div>
+  </div>
+
+        <div class="flex items-center gap-2">
+          <router-link
+            :to="`/products/${p.id}/edit`"
+            class="rounded-md border px-3 py-1 hover:bg-gray-100"
+          >
+            Edit
+          </router-link>
+
+          <button
+            class="rounded-md border px-3 py-1 hover:bg-gray-100"
+            @click="onDelete(p.id)"
+            :disabled="deletingId === p.id"
+          >
+            {{ deletingId === p.id ? "Tar bort..." : "Delete" }}
+          </button>
         </div>
-        <div class="text-xs text-gray-500">#{{ p.id }}</div>
       </div>
     </div>
   </div>
@@ -38,6 +64,7 @@ import api from "../services/api";
 const products = ref([]);
 const loading = ref(false);
 const error = ref(null);
+const deletingId = ref(null);
 
 async function fetchProducts() {
   loading.value = true;
@@ -49,6 +76,21 @@ async function fetchProducts() {
     error.value = e?.response?.data?.message || e?.message || "Kunde inte hämta produkter";
   } finally {
     loading.value = false;
+  }
+}
+
+async function onDelete(id) {
+  const ok = confirm("Vill du verkligen ta bort produkten?");
+  if (!ok) return;
+
+  deletingId.value = id;
+  try {
+    await api.delete(`/products/${id}`);
+    await fetchProducts();
+  } catch (e) {
+    alert(e?.response?.data?.message || "Kunde inte ta bort produkten");
+  } finally {
+    deletingId.value = null;
   }
 }
 
