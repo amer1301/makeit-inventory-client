@@ -23,9 +23,10 @@
         class="w-full rounded-md border px-3 py-2"
         rows="3"
         required
-      />
+      ></textarea>
     </div>
 
+    <!-- ✅ Grid: Pris + Kategori -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm mb-1">Pris</label>
@@ -40,15 +41,17 @@
       </div>
 
       <div>
-        <label class="block text-sm mb-1">Kategori-ID</label>
-        <input
+        <label class="block text-sm mb-1">Kategori</label>
+        <select
           v-model="form.categoryId"
-          type="number"
-          step="1"
-          min="1"
           class="w-full rounded-md border px-3 py-2"
           required
-        />
+        >
+          <option disabled value="">Välj kategori...</option>
+          <option v-for="c in categories" :key="c.id" :value="c.id">
+            {{ c.name }}
+          </option>
+        </select>
       </div>
     </div>
 
@@ -79,12 +82,17 @@
       <button class="rounded-md bg-black text-white px-4 py-2 disabled:opacity-60" :disabled="loading">
         {{ loading ? "Sparar..." : submitLabel }}
       </button>
-      <button type="button" class="rounded-md border px-4 py-2 hover:bg-gray-100" @click="$emit('cancel')">
+      <button
+        type="button"
+        class="rounded-md border px-4 py-2 hover:bg-gray-100"
+        @click="$emit('cancel')"
+      >
         Avbryt
       </button>
     </div>
   </form>
 </template>
+
 
 <script setup>
 import { computed, reactive, watch } from "vue";
@@ -93,6 +101,7 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   loading: { type: Boolean, default: false },
   submitLabel: { type: String, default: "Spara" },
+  categories: { type: Array, default: () => [] },
 });
 defineEmits(["submit", "cancel"]);
 
@@ -113,7 +122,6 @@ watch(
   { deep: true }
 );
 
-// ✅ Normalisera till rätt typer innan vi skickar till API
 const normalizedPayload = computed(() => ({
   name: String(form.name ?? "").trim(),
   sku: String(form.sku ?? "").trim(),

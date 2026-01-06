@@ -7,6 +7,7 @@
     <ProductForm
       :modelValue="model"
       :loading="loading"
+      :categories="categories"
       submitLabel="Skapa"
       @submit="createProduct"
       @cancel="goBack"
@@ -15,14 +16,17 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
 import ProductForm from "../components/ProductForm.vue";
+import { getCategories } from "../services/categories";
 
 const router = useRouter();
 const loading = ref(false);
 const error = ref(null);
+
+const categories = ref([]);
 
 const model = reactive({
   name: "",
@@ -30,7 +34,7 @@ const model = reactive({
   description: "",
   price: "",
   imageUrl: "",
-  categoryId: 1, // default
+  categoryId: "",
   stockQuantity: "",
 });
 
@@ -45,9 +49,22 @@ async function createProduct(payload) {
     await api.post("/products", payload);
     router.push("/products");
   } catch (e) {
-    error.value = e?.response?.data?.message || e?.message || "Kunde inte skapa produkten";
+    error.value =
+      e?.response?.data?.message || e?.message || "Kunde inte skapa produkten";
   } finally {
     loading.value = false;
   }
 }
+
+async function loadCategories() {
+  categories.value = await getCategories();
+
+  if (!model.categoryId && categories.value.length > 0) {
+    model.categoryId = categories.value[0].id;
+  }
+}
+
+onMounted(async () => {
+  await loadCategories();
+});
 </script>
