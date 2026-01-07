@@ -7,7 +7,7 @@
     :type="toast.type"
   />
 
-  <!-- ✅ ConfirmModal ligger här: direkt under Toast, innan resten av sidan -->
+  <!-- Confirm modal: läggs högt upp så den alltid kan visas -->
   <ConfirmModal
     :open="confirmOpen"
     title="Ta bort produkt"
@@ -18,14 +18,15 @@
     @confirm="confirmDelete"
   />
 
-<div class="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-rose-50">
-    <!-- Sticky toolbar -->
-<div class="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-rose-100">
-      <div class="max-w-5xl mx-auto px-4 py-3">
-        <div class="flex items-center justify-between gap-3">
+  <!-- PAGE -->
+  <div class="w-full">
+    <!-- Toolbar -->
+    <div class="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-rose-100">
+      <div class="mx-auto max-w-5xl px-4 py-4">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <h1 class="text-xl font-semibold text-black-900">Produkter</h1>
-            <p class="text-sm text-black-500">
+            <h1 class="text-2xl font-semibold text-gray-900">Produkter</h1>
+            <p class="text-sm text-gray-600">
               Sök och filtrera produkter. Justera lagersaldo under “Edit”.
             </p>
           </div>
@@ -33,23 +34,23 @@
           <router-link
             v-if="isAdmin"
             to="/products/new"
-            class="rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 text-sm shadow-sm transition"
+            class="shrink-0 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 text-sm shadow-sm transition"
           >
             Ny produkt
           </router-link>
         </div>
 
         <!-- Search + filter -->
-        <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="sm:col-span-2 flex gap-2">
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div class="lg:col-span-2 flex gap-2">
             <input
               v-model.trim="query"
-              class="w-full rounded-md border px-3 py-2"
+              class="w-full rounded-xl border border-rose-100 bg-white px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-200"
               placeholder="Sök på namn eller SKU..."
             />
             <button
               v-if="query"
-              class="rounded-md border px-3 py-2 hover:bg-gray-100"
+              class="rounded-xl border border-rose-100 bg-white px-4 py-2.5 text-sm hover:bg-rose-50 transition"
               @click="query = ''"
             >
               Rensa
@@ -58,7 +59,7 @@
 
           <select
             v-model.number="selectedCategoryId"
-            class="w-full rounded-md border px-3 py-2"
+            class="w-full rounded-xl border border-rose-100 bg-white px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-200"
           >
             <option :value="0">Alla kategorier</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">
@@ -67,16 +68,15 @@
           </select>
         </div>
 
-        <!-- Quick stats -->
+        <!-- Stats -->
         <div class="mt-3 flex flex-wrap gap-2 text-sm">
-          <span class="rounded-full border px-2 py-1 bg-white">
-            Visar: <b>{{ filteredProducts.length }}</b> av
-            <b>{{ products.length }}</b>
+          <span class="rounded-full border border-rose-100 bg-white/80 px-3 py-1">
+            Visar: <b>{{ filteredProducts.length }}</b> av <b>{{ products.length }}</b>
           </span>
-          <span class="rounded-full border px-2 py-1 bg-white">
+          <span class="rounded-full border border-rose-100 bg-white/80 px-3 py-1">
             Lågt lager: <b>{{ lowStockCount }}</b>
           </span>
-          <span class="rounded-full border px-2 py-1 bg-white">
+          <span class="rounded-full border border-rose-100 bg-white/80 px-3 py-1">
             Slut: <b>{{ outOfStockCount }}</b>
           </span>
         </div>
@@ -84,156 +84,199 @@
     </div>
 
     <!-- Content -->
-    <div class="max-w-5xl mx-auto px-4 py-6">
-      <p v-if="loading">Laddar...</p>
-      <p v-else-if="error" class="text-red-600 text-sm">{{ error }}</p>
+    <div class="mx-auto max-w-5xl px-4 py-6">
+      <p v-if="loading" class="text-sm text-gray-600">Laddar...</p>
+      <p v-else-if="error" class="text-sm text-rose-700">{{ error }}</p>
 
-<div class="rounded-2xl border border-rose-100 bg-white shadow-sm overflow-hidden">
-        <!-- Header row (desktop) -->
-<div
-  class="hidden sm:grid grid-cols-11 gap-2 px-4 py-2 text-xs font-medium text-gray-500 border-b bg-gray-50"
->
-  <div class="col-span-4">Produkt</div>
-  <div class="col-span-2">SKU</div>
-  <div class="col-span-2">Kategori</div>
-  <div class="col-span-1 text-right">Pris</div>
-  <div class="col-span-1 text-center">Lager</div>
-  <div class="col-span-1 text-right">Åtgärder</div>
-</div>
-
+      <div v-else class="rounded-2xl border border-rose-100 bg-white shadow-sm overflow-hidden">
+        <!-- Desktop header (lg+) -->
+        <div
+          class="hidden lg:grid items-center gap-3 px-4 py-3 text-xs font-medium text-gray-500 bg-rose-50/50 border-b border-rose-100"
+          style="grid-template-columns: 1.7fr 0.9fr 0.9fr 0.7fr 0.5fr 84px;"
+        >
+          <div>Produkt</div>
+          <div>SKU</div>
+          <div>Kategori</div>
+          <div class="text-right">Pris</div>
+          <div class="text-center">Lager</div>
+          <div class="text-right"> </div>
+        </div>
 
         <!-- Empty -->
-        <div
-          v-if="filteredProducts.length === 0"
-          class="p-6 text-sm text-gray-600"
-        >
+        <div v-if="filteredProducts.length === 0" class="p-6 text-sm text-gray-600">
           Inga produkter matchar din sökning/filter.
         </div>
 
         <!-- Rows -->
-        <div
-          v-for="p in filteredProducts"
-          :key="p.id"
-          class="border-b last:border-b-0 px-4 py-3"
-        >
-          <div class="grid grid-cols-1 sm:grid-cols-11 gap-3 items-center">
+        <div v-for="p in filteredProducts" :key="p.id" class="border-b border-rose-100 last:border-b-0">
+          <!-- Desktop row (lg+) -->
+          <div
+            class="hidden lg:grid items-center gap-3 px-4 py-3"
+            style="grid-template-columns: 1.7fr 0.9fr 0.9fr 0.7fr 0.5fr 84px;"
+          >
             <!-- Produkt -->
-            <div class="sm:col-span-4 flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-3 min-w-0">
               <img
                 :src="p.imageUrl"
                 alt=""
-                class="h-10 w-10 rounded-md border object-cover bg-gray-50"
+                class="h-10 w-10 rounded-lg border border-rose-100 object-cover bg-rose-50"
+                @error="onImgError"
+              />
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="font-medium text-gray-900 truncate">{{ p.name }}</span>
+                  <span
+                    class="inline-flex rounded-full px-2 py-0.5 text-[11px] border"
+                    :class="stockBadgeClass(Number(p.stockQuantity))"
+                  >
+                    {{ stockBadgeText(Number(p.stockQuantity)) }}
+                  </span>
+                </div>
+                <div class="text-xs text-gray-500">#{{ p.id }}</div>
+              </div>
+            </div>
+
+            <!-- SKU -->
+            <div class="text-sm text-gray-700 truncate">{{ p.sku }}</div>
+
+            <!-- Kategori -->
+            <div class="text-sm text-gray-700 truncate">
+              {{ categoryNameById.get(p.categoryId) || "-" }}
+            </div>
+
+            <!-- Pris -->
+            <div class="text-sm text-gray-700 text-right tabular-nums whitespace-nowrap">
+              {{ formatPrice(p.price) }}
+            </div>
+
+            <!-- Lager -->
+            <div class="flex justify-center">
+              <span
+                class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
+                :class="stockPillClass(Number(p.stockQuantity))"
+              >
+                {{ p.stockQuantity }}
+              </span>
+            </div>
+
+            <!-- Actions (ikon-knappar längst höger) -->
+            <div class="flex justify-end gap-2">
+              <router-link
+                :to="`/products/${p.id}/edit`"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-violet-200 bg-white text-violet-700 hover:bg-violet-50 transition"
+                title="Redigera"
+                aria-label="Redigera"
+              >
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                </svg>
+              </router-link>
+
+              <button
+                v-if="isAdmin"
+                type="button"
+                @click="askDelete(p.id, p.name)"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 transition disabled:opacity-50"
+                :disabled="deletingId === p.id"
+                title="Ta bort"
+                aria-label="Ta bort"
+              >
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile/Tablet card (<lg) -->
+          <div class="lg:hidden px-4 py-4">
+            <div class="flex items-start gap-3">
+              <img
+                :src="p.imageUrl"
+                alt=""
+                class="h-12 w-12 rounded-xl border border-rose-100 object-cover bg-rose-50"
                 @error="onImgError"
               />
 
-              <div class="min-w-0">
-                <div class="font-medium truncate flex items-center gap-2">
-                  <span class="truncate">{{ p.name }}</span>
-
-                  <!-- Desktop status badge -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <div class="font-medium text-gray-900 truncate">{{ p.name }}</div>
                   <span
-                    class="hidden sm:inline-flex rounded-full px-2 py-0.5 text-xs border"
+                    class="inline-flex rounded-full px-2 py-0.5 text-[11px] border"
                     :class="stockBadgeClass(Number(p.stockQuantity))"
                   >
                     {{ stockBadgeText(Number(p.stockQuantity)) }}
                   </span>
                 </div>
 
-                <div class="text-xs text-gray-500 truncate">#{{ p.id }}</div>
+                <div class="mt-1 text-xs text-gray-600">
+                  <span class="font-medium">SKU:</span> {{ p.sku }}
+                </div>
+                <div class="mt-0.5 text-xs text-gray-600">
+                  <span class="font-medium">Kategori:</span> {{ categoryNameById.get(p.categoryId) || "-" }}
+                </div>
+              </div>
+
+              <!-- Lager + pris + actions till höger -->
+              <div class="flex flex-col items-end gap-2">
+                <div class="text-sm text-gray-700 tabular-nums whitespace-nowrap">
+                  {{ formatPrice(p.price) }}
+                </div>
+
+                <span
+                  class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
+                  :class="stockPillClass(Number(p.stockQuantity))"
+                >
+                  {{ p.stockQuantity }}
+                </span>
+
+                <div class="flex gap-2">
+                  <router-link
+                    :to="`/products/${p.id}/edit`"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-violet-200 bg-white text-violet-700 hover:bg-violet-50 transition"
+                    title="Redigera"
+                    aria-label="Redigera"
+                  >
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                    </svg>
+                  </router-link>
+
+                  <button
+                    v-if="isAdmin"
+                    type="button"
+                    @click="askDelete(p.id, p.name)"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 transition disabled:opacity-50"
+                    :disabled="deletingId === p.id"
+                    title="Ta bort"
+                    aria-label="Ta bort"
+                  >
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- SKU -->
-            <div class="sm:col-span-2 text-sm text-gray-700">
-              {{ p.sku }}
-            </div>
-
-            <!-- Kategori -->
-            <div class="sm:col-span-2 text-sm text-gray-700">
-              {{ categoryNameById.get(p.categoryId) || "-" }}
-            </div>
-
-            <!-- Pris -->
-<div class="sm:col-span-1 text-sm text-gray-700 text-right tabular-nums whitespace-nowrap">
-  {{ formatPrice(p.price) }}
-</div>
-
-            <!-- Lager (endast antal) -->
-<div class="sm:col-span-1 flex items-center justify-center">
-              <span
-                class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
-                :class="
-                  Number(p.stockQuantity) < 5
-                    ? 'bg-amber-50 border-amber-200 text-amber-800'
-                    : 'bg-rose-50 border-rose-200 text-rose-900'
-                "
-              >
-                {{ p.stockQuantity }}
-              </span>
-            </div>
-<div class="sm:col-span-1 flex justify-end">
-  <div class="inline-flex items-center gap-1">
-    <router-link
-      :to="`/products/${p.id}/edit`"
-      class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-violet-200 bg-white text-violet-700 shadow-sm hover:bg-violet-50 transition"
-      title="Redigera"
-      aria-label="Redigera"
-    >
-      <!-- Pencil -->
-      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-      </svg>
-    </router-link>
-
-    <button
-      v-if="isAdmin"
-      type="button"
-      @click="askDelete(p.id, p.name)"
-      class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-700 shadow-sm hover:bg-rose-50 transition disabled:opacity-50"
-      :disabled="deletingId === p.id"
-      title="Ta bort"
-      aria-label="Ta bort"
-    >
-      <!-- Trash -->
-      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 6h18" />
-        <path d="M8 6V4h8v2" />
-        <path d="M19 6l-1 14H6L5 6" />
-        <path d="M10 11v6" />
-        <path d="M14 11v6" />
-      </svg>
-    </button>
-  </div>
-</div>
-</div>
-          <!-- Mobile meta row -->
-          <div class="sm:hidden mt-2 flex flex-wrap gap-2 text-xs">
-            <span
-              class="rounded-full px-2 py-0.5 border"
-              :class="stockBadgeClass(Number(p.stockQuantity))"
-            >
-              {{ stockBadgeText(Number(p.stockQuantity)) }}
-            </span>
-
-            <span class="rounded-full px-2 py-0.5 border text-gray-600">
-              {{ categoryNameById.get(p.categoryId) || "-" }}
-            </span>
-
-            <span class="rounded-full px-2 py-0.5 border text-gray-600">
-              {{ p.sku }}
-            </span>
-
-            <span class="rounded-full px-2 py-0.5 border text-gray-600">
-              {{ formatPrice(p.price) }}
-            </span>
-
-            <span class="rounded-full px-2 py-0.5 border text-gray-700 bg-gray-50">
-              Lager: {{ p.stockQuantity }}
-            </span>
+            <div class="mt-2 text-xs text-gray-500">#{{ p.id }}</div>
           </div>
         </div>
       </div>
+
+      <p class="mt-3 text-xs text-gray-500">
+        Tips: gå in på <b>Edit</b> för att justera lagersaldo och se historik.
+      </p>
     </div>
   </div>
 </template>
@@ -253,13 +296,12 @@ const toast = ref(null);
 
 // sök + kategori-filter
 const query = ref("");
-const selectedCategoryId = ref(0); // 0 = alla
+const selectedCategoryId = ref(0);
 
-// TODO: koppla till din auth-store när du vill.
-// Ex: const auth = useAuthStore(); const isAdmin = computed(() => auth.role === 'ADMIN')
+// TODO: koppla till din auth-store när du vill
 const isAdmin = computed(() => true);
 
-// kategorier + lookup (id -> name)
+// kategorier
 const categories = ref([]);
 const categoryNameById = computed(() => {
   const map = new Map();
@@ -267,7 +309,7 @@ const categoryNameById = computed(() => {
   return map;
 });
 
-// ✅ confirm modal state
+// confirm modal state
 const confirmOpen = ref(false);
 const pendingDeleteId = ref(null);
 const pendingDeleteName = ref("");
@@ -292,9 +334,7 @@ async function fetchProducts() {
     const res = await api.get("/products");
     products.value = res.data;
   } catch (e) {
-    const msg =
-      e?.response?.data?.message || e?.message || "Kunde inte hämta produkter";
-
+    const msg = e?.response?.data?.message || e?.message || "Kunde inte hämta produkter";
     error.value = msg;
     showToast({ title: "Fel", message: msg, type: "error" });
   } finally {
@@ -318,7 +358,6 @@ const filteredProducts = computed(() => {
     const sku = String(p.sku ?? "").toLowerCase();
 
     const matchesQuery = !q || name.includes(q) || sku.includes(q);
-
     const matchesCategory =
       Number(selectedCategoryId.value) === 0 ||
       Number(p.categoryId) === Number(selectedCategoryId.value);
@@ -328,10 +367,7 @@ const filteredProducts = computed(() => {
 });
 
 const lowStockCount = computed(
-  () =>
-    filteredProducts.value.filter(
-      (p) => Number(p.stockQuantity) > 0 && Number(p.stockQuantity) < 5
-    ).length
+  () => filteredProducts.value.filter((p) => Number(p.stockQuantity) > 0 && Number(p.stockQuantity) < 5).length
 );
 
 const outOfStockCount = computed(
@@ -348,6 +384,12 @@ function stockBadgeClass(qty) {
   if (qty === 0) return "border-rose-300 text-rose-800 bg-rose-50";
   if (qty < 5) return "border-amber-200 text-amber-800 bg-amber-50";
   return "border-violet-200 text-violet-700 bg-violet-50";
+}
+
+function stockPillClass(qty) {
+  // lager-pill: neutral/varning
+  if (qty < 5) return "bg-amber-50 border-amber-200 text-amber-900";
+  return "bg-rose-50 border-rose-200 text-rose-900";
 }
 
 function formatPrice(price) {

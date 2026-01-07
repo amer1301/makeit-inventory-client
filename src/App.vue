@@ -1,5 +1,5 @@
 <template>
-  <!-- ✅ Hela sidans bakgrund (även “grå ytorna” på sidorna) -->
+  <!-- Global bakgrund -->
   <div class="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-rose-50 text-gray-900">
     <!-- Header -->
     <header class="border-b border-rose-100 bg-white/70 backdrop-blur">
@@ -28,8 +28,8 @@
       </div>
     </header>
 
-    <!-- Content -->
-    <main class="mx-auto max-w-5xl px-4 py-6">
+    <!-- Viktigt: INGEN max-w / px här -->
+    <main class="w-full">
       <router-view />
     </main>
   </div>
