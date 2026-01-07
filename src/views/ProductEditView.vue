@@ -68,7 +68,10 @@
             <span class="font-medium">
               {{ m.delta > 0 ? "+" + m.delta : m.delta }}
             </span>
-            <span class="text-gray-600"> • {{ m.reason }} • user #{{ m.createdByUserId }}</span>
+
+            <span class="text-gray-600">
+              • {{ m.reason }} • {{ movementActor(m) }}
+            </span>
           </div>
 
           <div class="text-xs text-gray-500">
@@ -111,7 +114,7 @@ const model = reactive({
   price: "",
   imageUrl: "",
   stockQuantity: "",
-  categoryId: "", // vi sätter den när vi laddar produkten
+  categoryId: "",
 });
 
 const stockDelta = ref(0);
@@ -125,6 +128,17 @@ const movementsError = ref(null);
 
 function goBack() {
   router.push("/products");
+}
+
+function movementActor(m) {
+  // Backend ska returnera "createdBy" med role/email via Prisma include.
+  // Fallback om historiken innehåller äldre rader utan kopplad user.
+  const role = m?.createdBy?.role;
+  const email = m?.createdBy?.email;
+
+  if (role && email) return `${role.toLowerCase()} (${email})`;
+  if (role) return role.toLowerCase();
+  return "okänd användare";
 }
 
 async function loadCategories() {
@@ -147,7 +161,6 @@ async function loadProduct() {
       description: p.description ?? "",
       price: String(p.price ?? ""),
       imageUrl: p.imageUrl ?? "",
-      // ✅ viktigt: håll samma typ som dropdownens value (number rekommenderas)
       categoryId: Number(p.categoryId),
       stockQuantity: String(p.stockQuantity ?? ""),
     });

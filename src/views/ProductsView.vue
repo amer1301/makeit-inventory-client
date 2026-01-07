@@ -11,25 +11,42 @@
       </router-link>
     </div>
 
-    <!-- Sök + info -->
-    <div class="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-      <div class="flex gap-2 w-full sm:max-w-md">
-        <input
-          v-model.trim="query"
-          class="w-full rounded-md border px-3 py-2"
-          placeholder="Sök på namn eller SKU..."
-        />
-        <button
-          v-if="query"
-          class="rounded-md border px-3 py-2 hover:bg-gray-100"
-          @click="query = ''"
-        >
-          Rensa
-        </button>
+    <!-- Sök + kategori-filter + info -->
+    <div class="mb-4 flex flex-col gap-2">
+      <div
+        class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between"
+      >
+        <div class="flex gap-2 w-full sm:max-w-md">
+          <input
+            v-model.trim="query"
+            class="w-full rounded-md border px-3 py-2"
+            placeholder="Sök på namn eller SKU..."
+          />
+          <button
+            v-if="query"
+            class="rounded-md border px-3 py-2 hover:bg-gray-100"
+            @click="query = ''"
+          >
+            Rensa
+          </button>
+        </div>
+
+        <div class="text-sm text-gray-600">
+          Visar {{ filteredProducts.length }} av {{ products.length }}
+        </div>
       </div>
 
-      <div class="text-sm text-gray-600">
-        Visar {{ filteredProducts.length }} av {{ products.length }}
+      <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <label class="text-sm text-gray-700">Kategori:</label>
+        <select
+          v-model="selectedCategoryId"
+          class="rounded-md border px-3 py-2 w-full sm:w-64"
+        >
+          <option value="all">Alla</option>
+          <option v-for="c in categories" :key="c.id" :value="c.id">
+            {{ c.name }}
+          </option>
+        </select>
       </div>
     </div>
 
@@ -38,7 +55,7 @@
 
     <div v-else class="space-y-2">
       <p v-if="filteredProducts.length === 0" class="text-sm text-gray-600">
-        Inga produkter matchar din sökning.
+        Inga produkter matchar din sökning/filter.
       </p>
 
       <div
@@ -55,10 +72,31 @@
           />
 
           <div class="min-w-0">
-            <div class="font-medium truncate">
-              {{ p.name }}
-              <span class="ml-2 text-xs text-gray-500">({{ p.sku }})</span>
+            <!-- Namn + badges -->
+            <div class="font-medium truncate flex items-center gap-2">
+              <span class="truncate">{{ p.name }}</span>
+
+              <!-- Low stock badge -->
+              <span
+                v-if="Number(p.stockQuantity) < 5"
+                class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200"
+              >
+                LOW STOCK
+              </span>
+
+              <!-- Kategori badge -->
+              <span
+                class="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-700 border"
+              >
+                {{ categoryNameById.get(p.categoryId) || `Kategori ${p.categoryId}` }}
+              </span>
+
+              <!-- SKU -->
+              <span class="text-xs text-gray-500">
+                ({{ p.sku }})
+              </span>
             </div>
+
             <div class="text-sm text-gray-600">
               Pris: {{ p.price }} • Lager: {{ p.stockQuantity }}
             </div>
@@ -86,26 +124,27 @@
   </div>
 </template>
 
+
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import api from "../services/api";
+import { getCategories } from "../services/categories";
 
 const products = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const deletingId = ref(null);
 
+// sök + kategori-filter
 const query = ref("");
+const selectedCategoryId = ref("all");
 
-const filteredProducts = computed(() => {
-  const q = query.value.trim().toLowerCase();
-  if (!q) return products.value;
-
-  return products.value.filter((p) => {
-    const name = String(p.name ?? "").toLowerCase();
-    const sku = String(p.sku ?? "").toLowerCase();
-    return name.includes(q) || sku.includes(q);
-  });
+// kategorier + lookup (id -> name)
+const categories = ref([]);
+const categoryNameById = computed(() => {
+  const map = new Map();
+  for (const c of categories.value) map.set(c.id, c.name);
+  return map;
 });
 
 async function fetchProducts() {
@@ -122,6 +161,32 @@ async function fetchProducts() {
   }
 }
 
+async function fetchCategories() {
+  try {
+    categories.value = await getCategories();
+  } catch (e) {
+    // inte kritiskt – produkterna kan fortfarande visas
+    console.warn("Kunde inte hämta kategorier", e);
+  }
+}
+
+const filteredProducts = computed(() => {
+  const q = query.value.trim().toLowerCase();
+
+  return products.value.filter((p) => {
+    const name = String(p.name ?? "").toLowerCase();
+    const sku = String(p.sku ?? "").toLowerCase();
+
+    const matchesQuery = !q || name.includes(q) || sku.includes(q);
+
+    const matchesCategory =
+      selectedCategoryId.value === "all" ||
+      Number(p.categoryId) === Number(selectedCategoryId.value);
+
+    return matchesQuery && matchesCategory;
+  });
+});
+
 async function onDelete(id) {
   const ok = confirm("Vill du verkligen ta bort produkten?");
   if (!ok) return;
@@ -137,5 +202,7 @@ async function onDelete(id) {
   }
 }
 
-onMounted(fetchProducts);
+onMounted(async () => {
+  await Promise.all([fetchProducts(), fetchCategories()]);
+});
 </script>
