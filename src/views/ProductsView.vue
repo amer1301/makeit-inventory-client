@@ -7,7 +7,7 @@
     :type="toast.type"
   />
 
-  <!-- Confirm modal: läggs högt upp så den alltid kan visas -->
+  <!-- Confirm modal -->
   <ConfirmModal
     :open="confirmOpen"
     title="Ta bort produkt"
@@ -18,7 +18,6 @@
     @confirm="confirmDelete"
   />
 
-  <!-- PAGE -->
   <div class="w-full">
     <!-- Toolbar -->
     <div class="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-rose-100">
@@ -27,14 +26,17 @@
           <div>
             <h1 class="text-2xl font-semibold text-gray-900">Produkter</h1>
             <p class="text-sm text-gray-600">
-              Sök och filtrera produkter. Justera lagersaldo under “Edit”.
+              Sök och filtrera produkter.
+              <span v-if="isAdmin">Justera lagersaldo och historik finns i “Edit”.</span>
+              <span v-else>Justera lagersaldo med +/− och se historik i Edit (admin).</span>
             </p>
           </div>
 
+          <!-- ADMIN only -->
           <router-link
             v-if="isAdmin"
             to="/products/new"
-            class="shrink-0 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 text-sm shadow-sm transition"
+            class="rounded-full bg-violet-600 text-white px-4 py-2"
           >
             Ny produkt
           </router-link>
@@ -92,14 +94,14 @@
         <!-- Desktop header (lg+) -->
         <div
           class="hidden lg:grid items-center gap-3 px-4 py-3 text-xs font-medium text-gray-500 bg-rose-50/50 border-b border-rose-100"
-          style="grid-template-columns: 1.7fr 0.9fr 0.9fr 0.7fr 0.5fr 84px;"
+          :style="desktopHeaderGrid"
         >
           <div>Produkt</div>
           <div>SKU</div>
           <div>Kategori</div>
           <div class="text-right">Pris</div>
           <div class="text-center">Lager</div>
-          <div class="text-right"> </div>
+          <div class="text-right"></div>
         </div>
 
         <!-- Empty -->
@@ -108,12 +110,13 @@
         </div>
 
         <!-- Rows -->
-        <div v-for="p in filteredProducts" :key="p.id" class="border-b border-rose-100 last:border-b-0">
+        <div
+          v-for="p in filteredProducts"
+          :key="p.id"
+          class="border-b border-rose-100 last:border-b-0"
+        >
           <!-- Desktop row (lg+) -->
-          <div
-            class="hidden lg:grid items-center gap-3 px-4 py-3"
-            style="grid-template-columns: 1.7fr 0.9fr 0.9fr 0.7fr 0.5fr 84px;"
-          >
+          <div class="hidden lg:grid items-center gap-3 px-4 py-3" :style="desktopRowGrid">
             <!-- Produkt -->
             <div class="flex items-center gap-3 min-w-0">
               <img
@@ -149,19 +152,47 @@
               {{ formatPrice(p.price) }}
             </div>
 
-            <!-- Lager -->
+            <!-- Lager (STAFF får +/−, ADMIN ser bara pill här och justerar i Edit) -->
             <div class="flex justify-center">
-              <span
-                class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
-                :class="stockPillClass(Number(p.stockQuantity))"
-              >
-                {{ p.stockQuantity }}
-              </span>
+              <div class="flex items-center gap-2">
+                <!-- STAFF: minska -->
+                <button
+                  v-if="!isAdmin"
+                  class="h-8 w-8 rounded-lg border border-rose-100 bg-white hover:bg-rose-50 disabled:opacity-50"
+                  :disabled="adjustingId === p.id || Number(p.stockQuantity) <= 0"
+                  @click="adjustStock(p.id, -1)"
+                  title="Minska lager"
+                  aria-label="Minska lager"
+                >
+                  −
+                </button>
+
+                <span
+                  class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
+                  :class="stockPillClass(Number(p.stockQuantity))"
+                >
+                  {{ p.stockQuantity }}
+                </span>
+
+                <!-- STAFF: öka -->
+                <button
+                  v-if="!isAdmin"
+                  class="h-8 w-8 rounded-lg border border-rose-100 bg-white hover:bg-rose-50 disabled:opacity-50"
+                  :disabled="adjustingId === p.id"
+                  @click="adjustStock(p.id, +1)"
+                  title="Öka lager"
+                  aria-label="Öka lager"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
-            <!-- Actions (ikon-knappar längst höger) -->
+            <!-- Actions -->
             <div class="flex justify-end gap-2">
+              <!-- ADMIN only: Edit -->
               <router-link
+                v-if="isAdmin"
                 :to="`/products/${p.id}/edit`"
                 class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-violet-200 bg-white text-violet-700 hover:bg-violet-50 transition"
                 title="Redigera"
@@ -173,6 +204,7 @@
                 </svg>
               </router-link>
 
+              <!-- ADMIN only: Delete -->
               <button
                 v-if="isAdmin"
                 type="button"
@@ -218,24 +250,48 @@
                   <span class="font-medium">SKU:</span> {{ p.sku }}
                 </div>
                 <div class="mt-0.5 text-xs text-gray-600">
-                  <span class="font-medium">Kategori:</span> {{ categoryNameById.get(p.categoryId) || "-" }}
+                  <span class="font-medium">Kategori:</span>
+                  {{ categoryNameById.get(p.categoryId) || "-" }}
                 </div>
               </div>
 
-              <!-- Lager + pris + actions till höger -->
               <div class="flex flex-col items-end gap-2">
                 <div class="text-sm text-gray-700 tabular-nums whitespace-nowrap">
                   {{ formatPrice(p.price) }}
                 </div>
 
-                <span
-                  class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
-                  :class="stockPillClass(Number(p.stockQuantity))"
-                >
-                  {{ p.stockQuantity }}
-                </span>
+                <!-- Lager +/− för STAFF -->
+                <div class="flex items-center gap-2">
+                  <button
+                    v-if="!isAdmin"
+                    class="h-9 w-9 rounded-lg border border-rose-100 bg-white hover:bg-rose-50 disabled:opacity-50"
+                    :disabled="adjustingId === p.id || Number(p.stockQuantity) <= 0"
+                    @click="adjustStock(p.id, -1)"
+                    aria-label="Minska lager"
+                  >
+                    −
+                  </button>
 
-                <div class="flex gap-2">
+                  <span
+                    class="inline-flex items-center justify-center min-w-[2.5rem] rounded-md border px-2 py-0.5 text-sm font-semibold tabular-nums"
+                    :class="stockPillClass(Number(p.stockQuantity))"
+                  >
+                    {{ p.stockQuantity }}
+                  </span>
+
+                  <button
+                    v-if="!isAdmin"
+                    class="h-9 w-9 rounded-lg border border-rose-100 bg-white hover:bg-rose-50 disabled:opacity-50"
+                    :disabled="adjustingId === p.id"
+                    @click="adjustStock(p.id, +1)"
+                    aria-label="Öka lager"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <!-- ADMIN actions -->
+                <div v-if="isAdmin" class="flex gap-2">
                   <router-link
                     :to="`/products/${p.id}/edit`"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-violet-200 bg-white text-violet-700 hover:bg-violet-50 transition"
@@ -249,7 +305,6 @@
                   </router-link>
 
                   <button
-                    v-if="isAdmin"
                     type="button"
                     @click="askDelete(p.id, p.name)"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 transition disabled:opacity-50"
@@ -275,7 +330,8 @@
       </div>
 
       <p class="mt-3 text-xs text-gray-500">
-        Tips: gå in på <b>Edit</b> för att justera lagersaldo och se historik.
+        Tips: <span v-if="isAdmin">gå in på <b>Edit</b> för att justera lagersaldo och se historik.</span>
+        <span v-else>använd <b>+ / −</b> för att justera lagersaldo.</span>
       </p>
     </div>
   </div>
@@ -287,21 +343,25 @@ import api from "../services/api";
 import { getCategories } from "../services/categories";
 import Toast from "../components/Toast.vue";
 import ConfirmModal from "../components/ConfirmModal.vue";
+import { useAuthStore } from "../stores/auth";
+
+const auth = useAuthStore();
+
+// ✅ riktig admin-check (inte hårdkodat)
+const isAdmin = computed(() => auth.role === "ADMIN");
 
 const products = ref([]);
 const loading = ref(false);
 const error = ref(null);
+
 const deletingId = ref(null);
+const adjustingId = ref(null);
+
 const toast = ref(null);
 
-// sök + kategori-filter
 const query = ref("");
 const selectedCategoryId = ref(0);
 
-// TODO: koppla till din auth-store när du vill
-const isAdmin = computed(() => true);
-
-// kategorier
 const categories = ref([]);
 const categoryNameById = computed(() => {
   const map = new Map();
@@ -387,7 +447,6 @@ function stockBadgeClass(qty) {
 }
 
 function stockPillClass(qty) {
-  // lager-pill: neutral/varning
   if (qty < 5) return "bg-amber-50 border-amber-200 text-amber-900";
   return "bg-rose-50 border-rose-200 text-rose-900";
 }
@@ -430,9 +489,39 @@ async function confirmDelete() {
   }
 }
 
+async function adjustStock(productId, delta) {
+  adjustingId.value = productId;
+  try {
+    await api.patch(`/products/${productId}/stock`, {
+      delta,
+      reason: reasonForDelta(delta),
+    });
+    await fetchProducts();
+  } catch (e) {
+    showToast({
+      title: "Fel",
+      message: e?.response?.data?.message || "Kunde inte justera lagersaldo",
+      type: "error",
+    });
+  } finally {
+    adjustingId.value = null;
+  }
+}
+
+function reasonForDelta(delta) {
+  return delta > 0 ? "Påfyllning" : "Uttag";
+}
+
+
 function showToast({ title, message, type = "info" }) {
   toast.value = { title, message, type, id: Date.now() };
 }
+
+// små layout-hjälpare
+const desktopRowGrid = computed(() => ({
+  gridTemplateColumns: "1.7fr 0.9fr 0.9fr 0.7fr 0.7fr 84px",
+}));
+const desktopHeaderGrid = desktopRowGrid;
 
 onMounted(async () => {
   await Promise.all([fetchProducts(), fetchCategories()]);

@@ -1,14 +1,19 @@
 <template>
   <!-- Global bakgrund -->
-  <div class="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-rose-50 text-gray-900">
+  <div
+    class="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-rose-50 text-gray-900"
+  >
     <!-- Header -->
     <header class="border-b border-rose-100 bg-white/70 backdrop-blur">
-      <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <div
+        class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between"
+      >
         <router-link to="/products" class="font-semibold text-violet-900">
           MakeIt Inventory
         </router-link>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-4">
+          <!-- Ej inloggad -->
           <router-link
             v-if="!auth.isAuthenticated"
             to="/login"
@@ -17,13 +22,22 @@
             Login
           </router-link>
 
-          <button
-            v-else
-            class="text-sm rounded-full border border-violet-200 bg-white/70 px-4 py-1.5 text-violet-700 hover:bg-violet-50 transition"
-            @click="handleLogout"
-          >
-            Logout
-          </button>
+          <!-- Inloggad -->
+          <template v-else>
+            <span class="text-sm text-violet-900/80">
+              Inloggad som:
+              <span class="font-semibold">
+                {{ auth.roleLabel }}
+              </span>
+            </span>
+
+            <button
+              class="text-sm rounded-full border border-violet-200 bg-white/70 px-4 py-1.5 text-violet-700 hover:bg-violet-50 transition"
+              @click="handleLogout"
+            >
+              Logout
+            </button>
+          </template>
         </div>
       </div>
     </header>
