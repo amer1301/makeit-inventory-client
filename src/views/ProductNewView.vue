@@ -1,4 +1,5 @@
 <template>
+<div class="mx-auto max-w-5xl px-4 py-6">
   <div class="max-w-2xl">
     <h1 class="text-2xl font-semibold mb-4">Ny produkt</h1>
 
@@ -12,6 +13,7 @@
       @submit="createProduct"
       @cancel="goBack"
     />
+  </div>
   </div>
 </template>
 

@@ -1,4 +1,5 @@
 <template>
+<div class="mx-auto max-w-5xl px-4 py-6">
   <div class="max-w-md">
     <h1 class="text-2xl font-semibold mb-4">Logga in</h1>
 
@@ -34,6 +35,7 @@
         {{ auth.loading ? "Loggar in..." : "Logga in" }}
       </button>
     </form>
+  </div>
   </div>
 </template>
 
