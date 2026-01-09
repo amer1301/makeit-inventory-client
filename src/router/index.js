@@ -20,13 +20,13 @@ const routes = [
     path: "/products/new",
     name: "product-new",
     component: ProductNewView,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ["ADMIN"] },
   },
   {
     path: "/products/:id/edit",
     name: "product-edit",
     component: ProductEditView,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ["ADMIN"] },
   },
 ];
 
@@ -48,15 +48,11 @@ router.beforeEach((to) => {
     return { name: "products" };
   }
 
-  // 3) ✅ Blockera STAFF från att skapa produkt
-  if (to.name === "product-new" && auth.role !== "ADMIN") {
+  // 3) Rollstyrning via meta.roles
+  const requiredRoles = to.meta.roles;
+  if (requiredRoles && (!auth.role || !requiredRoles.includes(auth.role))) {
     return { name: "products" };
   }
-
-  // blockera STAFF från new + edit
-if ((to.name === "product-new" || to.name === "product-edit") && auth.role !== "ADMIN") {
-  return { name: "products" };
-}
 });
 
 export default router;
