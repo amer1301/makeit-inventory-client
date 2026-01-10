@@ -1,9 +1,10 @@
 # MakeIT Inventory Client
 
-SPA-klient byggd med Vue 3 (Vite) + Vue Router + Tailwind. Klienten använder MakeIt Inventory API för autentisering och CRUD av produkter.
+SPA-klient byggd med Vue 3 (Vite), Vue Router och Pinia. Klienten använder
+MakeIt Inventory API för autentisering och CRUD av produkter.
 
 ## Funktioner
-- Inloggning (JWT) via API
+- Inloggning (JWT) via API, med global auth-state hanterad i Pinia
 - Produkter: lista, skapa, redigera, ta bort
 - Lagerhantering: öka/minska saldo tydligt från gränssnittet
 - Kategorier (om aktiverat i UI): lista och koppla produkt till kategori
@@ -12,6 +13,7 @@ SPA-klient byggd med Vue 3 (Vite) + Vue Router + Tailwind. Klienten använder Ma
 ## Teknik
 - Vue 3 (Vite)
 - Vue Router
+- Pinia
 - Axios
 - Tailwind CSS
 
