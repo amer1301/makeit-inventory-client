@@ -38,17 +38,17 @@ const router = createRouter({
 router.beforeEach((to) => {
   const auth = useAuthStore();
 
-  // 1) Kräver inlogg
+  // Skyddar routes som kräver autentisering
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: "login" };
   }
 
-  // 2) Inloggad ska inte till login
+  // Förhindrar att inloggade användare navigerar tillbaka till inloggningssidan
   if (to.name === "login" && auth.isAuthenticated) {
     return { name: "products" };
   }
 
-  // 3) Rollstyrning via meta.roles
+  // Begränsar åtkomst baserat på roller angivna i route meta (t.ex. ADMIN)
   const requiredRoles = to.meta.roles;
   if (requiredRoles && (!auth.role || !requiredRoles.includes(auth.role))) {
     return { name: "products" };

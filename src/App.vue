@@ -1,9 +1,7 @@
 <template>
-  <!-- Global bakgrund -->
   <div
     class="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-rose-50 text-gray-900"
   >
-    <!-- Header -->
     <header class="border-b border-rose-100 bg-white/70 backdrop-blur">
       <div
         class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between"
@@ -13,7 +11,6 @@
         </router-link>
 
         <div class="flex items-center gap-4">
-          <!-- Ej inloggad -->
           <router-link
             v-if="!auth.isAuthenticated"
             to="/login"
@@ -22,7 +19,6 @@
             Login
           </router-link>
 
-          <!-- Inloggad -->
           <template v-else>
             <span class="text-sm text-violet-900/80">
               Inloggad som:
@@ -42,7 +38,6 @@
       </div>
     </header>
 
-    <!-- Viktigt: INGEN max-w / px här -->
     <main class="w-full">
       <router-view />
     </main>

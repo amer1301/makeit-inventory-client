@@ -26,7 +26,6 @@
       ></textarea>
     </div>
 
-    <!-- ✅ Grid: Pris + Kategori -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm mb-1">Pris</label>
@@ -128,9 +127,8 @@ const normalizedPayload = computed(() => ({
   description: String(form.description ?? "").trim(),
   imageUrl: String(form.imageUrl ?? "").trim(),
   categoryId: Number(form.categoryId),
-  // Decimal i Prisma: skicka number (eller string), här skickar vi number:
+  // Prisma hanterar Decimal; här normaliseras priset till number innan API-anrop
   price: Number(form.price),
-  // valfritt: skicka bara om användaren fyllt i
   ...(form.stockQuantity === "" || form.stockQuantity === null || form.stockQuantity === undefined
     ? {}
     : { stockQuantity: Number(form.stockQuantity) }),

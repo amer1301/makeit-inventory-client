@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import api from "../services/api";
 
+// Enkel klient-side-dekodning av JWT för att läsa roll utan extra API-anrop
 function decodeJwt(token) {
   try {
     const base64Url = token.split(".")[1];
@@ -19,6 +20,7 @@ function decodeJwt(token) {
   }
 }
 
+// Extraherar användarroll från JWT-payload
 function getRoleFromToken(token) {
   const payload = decodeJwt(token);
   return payload?.role || null;
@@ -28,16 +30,16 @@ export const useAuthStore = defineStore("auth", {
   state: () => {
     const token = localStorage.getItem("access_token") || null;
 
-    // ✅ försök ta role från localStorage, annars från token direkt
+    // Försöker hämta roll från localStorage, annars dekodas den från JWT-token
     const storedRole = localStorage.getItem("role");
     const role = storedRole || (token ? getRoleFromToken(token) : null);
 
-    // om vi lyckades hitta role från token, spara det
+    // Sparar roll i localStorage om den endast kunde hämtas från token
     if (!storedRole && role) localStorage.setItem("role", role);
 
     return {
       token,
-      role, // ✅ NY
+      role,
       user: null,
       loading: false,
       error: null,
@@ -46,7 +48,7 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isAuthenticated: (state) => !!state.token,
-    roleLabel: (state) => (state.role ? state.role.toUpperCase() : ""), // ✅ NY
+    roleLabel: (state) => (state.role ? state.role.toUpperCase() : ""),
   },
 
   actions: {

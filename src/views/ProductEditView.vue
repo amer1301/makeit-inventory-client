@@ -105,7 +105,6 @@ const saving = ref(false);
 const error = ref(null);
 const loadedOnce = ref(false);
 
-// ✅ categories
 const categories = ref([]);
 
 const model = reactive({
@@ -133,8 +132,7 @@ function goBack() {
 }
 
 function movementActor(m) {
-  // Backend ska returnera "createdBy" med role/email via Prisma include.
-  // Fallback om historiken innehåller äldre rader utan kopplad user.
+  // Lagerhändelser kan sakna kopplad användare; hanteras med fallback för att undvika krascher i UI
   const role = m?.createdBy?.role;
   const email = m?.createdBy?.email;
 

@@ -7,7 +7,6 @@
     :type="toast.type"
   />
 
-  <!-- Confirm modal -->
   <ConfirmModal
     :open="confirmOpen"
     title="Ta bort produkt"
@@ -19,7 +18,6 @@
   />
 
   <div class="w-full">
-    <!-- Toolbar -->
     <div class="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-rose-100">
       <div class="mx-auto max-w-5xl px-4 py-4">
         <div class="flex items-start justify-between gap-4">
@@ -32,7 +30,6 @@
             </p>
           </div>
 
-          <!-- ADMIN only -->
           <router-link
             v-if="isAdmin"
             to="/products/new"
@@ -42,7 +39,6 @@
           </router-link>
         </div>
 
-        <!-- Search + filter -->
         <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div class="lg:col-span-2 flex gap-2">
             <input
@@ -70,7 +66,6 @@
           </select>
         </div>
 
-        <!-- Stats -->
         <div class="mt-3 flex flex-wrap gap-2 text-sm">
           <span class="rounded-full border border-rose-100 bg-white/80 px-3 py-1">
             Visar: <b>{{ filteredProducts.length }}</b> av <b>{{ products.length }}</b>
@@ -85,13 +80,11 @@
       </div>
     </div>
 
-    <!-- Content -->
     <div class="mx-auto max-w-5xl px-4 py-6">
       <p v-if="loading" class="text-sm text-gray-600">Laddar...</p>
       <p v-else-if="error" class="text-sm text-rose-700">{{ error }}</p>
 
       <div v-else class="rounded-2xl border border-rose-100 bg-white shadow-sm overflow-hidden">
-        <!-- Desktop header (lg+) -->
         <div
           class="hidden lg:grid items-center gap-3 px-4 py-3 text-xs font-medium text-gray-500 bg-rose-50/50 border-b border-rose-100"
           :style="desktopHeaderGrid"
@@ -104,20 +97,16 @@
           <div class="text-right"></div>
         </div>
 
-        <!-- Empty -->
         <div v-if="filteredProducts.length === 0" class="p-6 text-sm text-gray-600">
           Inga produkter matchar din sökning/filter.
         </div>
 
-        <!-- Rows -->
         <div
           v-for="p in filteredProducts"
           :key="p.id"
           class="border-b border-rose-100 last:border-b-0"
         >
-          <!-- Desktop row (lg+) -->
           <div class="hidden lg:grid items-center gap-3 px-4 py-3" :style="desktopRowGrid">
-            <!-- Produkt -->
             <div class="flex items-center gap-3 min-w-0">
               <img
                 :src="p.imageUrl"
@@ -139,23 +128,18 @@
               </div>
             </div>
 
-            <!-- SKU -->
             <div class="text-sm text-gray-700 truncate">{{ p.sku }}</div>
 
-            <!-- Kategori -->
             <div class="text-sm text-gray-700 truncate">
               {{ categoryNameById.get(p.categoryId) || "-" }}
             </div>
 
-            <!-- Pris -->
             <div class="text-sm text-gray-700 text-right tabular-nums whitespace-nowrap">
               {{ formatPrice(p.price) }}
             </div>
 
-            <!-- Lager (STAFF får +/−, ADMIN ser bara pill här och justerar i Edit) -->
             <div class="flex justify-center">
               <div class="flex items-center gap-2">
-                <!-- STAFF: minska -->
                 <button
                   v-if="!isAdmin"
                   class="h-8 w-8 rounded-lg border border-rose-100 bg-white hover:bg-rose-50 disabled:opacity-50"
@@ -174,7 +158,6 @@
                   {{ p.stockQuantity }}
                 </span>
 
-                <!-- STAFF: öka -->
                 <button
                   v-if="!isAdmin"
                   class="h-8 w-8 rounded-lg border border-rose-100 bg-white hover:bg-rose-50 disabled:opacity-50"
@@ -188,9 +171,7 @@
               </div>
             </div>
 
-            <!-- Actions -->
             <div class="flex justify-end gap-2">
-              <!-- ADMIN only: Edit -->
               <router-link
                 v-if="isAdmin"
                 :to="`/products/${p.id}/edit`"
@@ -204,7 +185,6 @@
                 </svg>
               </router-link>
 
-              <!-- ADMIN only: Delete -->
               <button
                 v-if="isAdmin"
                 type="button"
@@ -225,7 +205,6 @@
             </div>
           </div>
 
-          <!-- Mobile/Tablet card (<lg) -->
           <div class="lg:hidden px-4 py-4">
             <div class="flex items-start gap-3">
               <img
@@ -260,7 +239,6 @@
                   {{ formatPrice(p.price) }}
                 </div>
 
-                <!-- Lager +/− för STAFF -->
                 <div class="flex items-center gap-2">
                   <button
                     v-if="!isAdmin"
@@ -290,7 +268,6 @@
                   </button>
                 </div>
 
-                <!-- ADMIN actions -->
                 <div v-if="isAdmin" class="flex gap-2">
                   <router-link
                     :to="`/products/${p.id}/edit`"
@@ -347,7 +324,7 @@ import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
 
-// ✅ riktig admin-check (inte hårdkodat)
+// Avgör om användaren har administratörsbehörighet baserat på roll i auth-store
 const isAdmin = computed(() => auth.role === "ADMIN");
 
 const products = ref([]);
@@ -369,7 +346,6 @@ const categoryNameById = computed(() => {
   return map;
 });
 
-// confirm modal state
 const confirmOpen = ref(false);
 const pendingDeleteId = ref(null);
 const pendingDeleteName = ref("");
@@ -508,6 +484,7 @@ async function adjustStock(productId, delta) {
   }
 }
 
+// Standardorsak vid snabbjustering från listvyn
 function reasonForDelta(delta) {
   return delta > 0 ? "Påfyllning" : "Uttag";
 }
@@ -517,7 +494,7 @@ function showToast({ title, message, type = "info" }) {
   toast.value = { title, message, type, id: Date.now() };
 }
 
-// små layout-hjälpare
+// Grid-kolumner för desktop-läget (matchar header och rader)
 const desktopRowGrid = computed(() => ({
   gridTemplateColumns: "1.7fr 0.9fr 0.9fr 0.7fr 0.7fr 84px",
 }));

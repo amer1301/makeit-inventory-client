@@ -55,7 +55,7 @@ async function onSubmit() {
     await auth.login(email.value, password.value);
     router.push("/products");
   } catch {
-    // fel hanteras i store (auth.error)
+    // Felmeddelanden hanteras centralt i auth-store
   }
 }
 </script>

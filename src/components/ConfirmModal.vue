@@ -1,4 +1,5 @@
 <template>
+<!-- Teleport används för att säkerställa att modalen renderas ovanför allt annat innehåll -->
   <teleport to="body">
     <transition name="fade">
       <div
